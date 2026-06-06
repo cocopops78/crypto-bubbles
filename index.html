@@ -3,151 +3,135 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<meta name="theme-color" content="#0d0d12">
+<meta name="theme-color" content="#090b0e">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <meta name="apple-mobile-web-app-title" content="CryptoBubbles">
 <link rel="manifest" href="manifest.json">
 <link rel="apple-touch-icon" href="icons/icon-192.png">
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Syne:wght@500;700&display=swap" rel="stylesheet">
 <title>Crypto Bubbles</title>
 <style>
 *{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
-:root{
-  --bg:#0d0d12;
-  --surface:#16161e;
-  --border:rgba(255,255,255,0.07);
-  --text:#eeeef0;
-  --muted:#52525e;
-  --green:#00e5a0;
-  --green-dim:#00c488;
-  --red:#ff3d57;
-  --red-dim:#e02a42;
-  --neutral:#2a2a38;
-  --font-display:'Syne',sans-serif;
-  --font-mono:'DM Mono',monospace;
+html,body{
+  width:100%;height:100%;
+  background:#090b0e;
+  overflow:hidden;
+  touch-action:none;
+  user-select:none;
+  font-family:'Courier New',Courier,monospace;
+  color:#eee;
 }
-html,body{width:100%;height:100%;background:var(--bg);overflow:hidden;touch-action:none;user-select:none}
-body{font-family:var(--font-mono);color:var(--text)}
 
-/* HEADER */
+/* ── HEADER ─────────────────────────────────── */
 #hdr{
-  position:fixed;top:0;left:0;right:0;height:48px;z-index:200;
-  background:rgba(13,13,18,0.88);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-bottom:1px solid var(--border);
+  position:fixed;top:0;left:0;right:0;height:42px;z-index:300;
   display:flex;align-items:center;justify-content:space-between;
-  padding:0 16px;
+  padding:0 14px;
+  border-bottom:1px solid rgba(255,255,255,0.05);
+  background:#090b0e;
 }
-.hdr-brand{display:flex;align-items:center;gap:8px}
-.hdr-dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 8px var(--green)}
-.hdr-title{font-family:var(--font-display);font-size:15px;font-weight:700;letter-spacing:0.01em;color:var(--text)}
-.hdr-sub{font-size:9px;color:var(--muted);letter-spacing:0.1em;text-transform:uppercase;margin-top:1px}
+.hbrand{display:flex;align-items:center;gap:7px}
+.hbullet{
+  width:9px;height:9px;border-radius:50%;
+  background:#00e5a0;
+  box-shadow:0 0 10px #00e5a066;
+  flex-shrink:0;
+}
+.hbullet.live{animation:blink 2.5s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1;box-shadow:0 0 10px #00e5a066}50%{opacity:.4;box-shadow:none}}
+.hname{font-size:13px;font-weight:700;letter-spacing:.01em;color:#ddd}
+.hsub{font-size:9px;color:#3a4a40;letter-spacing:.08em;text-transform:uppercase;margin-top:1px}
 
-.tabs{display:flex;gap:4px;align-items:center}
+.tabs{display:flex;gap:3px}
 .tab{
-  font-family:var(--font-mono);font-size:11px;font-weight:500;
-  padding:5px 12px;border-radius:20px;
-  border:1px solid var(--border);background:transparent;
-  color:var(--muted);cursor:pointer;letter-spacing:0.04em;
-  transition:all 0.18s ease;
+  font-family:inherit;font-size:11px;font-weight:600;
+  padding:4px 11px;border-radius:3px;
+  border:1px solid #1e2a24;
+  background:transparent;color:#3a5a48;cursor:pointer;
+  letter-spacing:.06em;transition:all .15s;
 }
-.tab:hover{color:var(--text);border-color:rgba(255,255,255,0.15)}
-.tab.on{background:rgba(255,255,255,0.09);color:var(--text);border-color:rgba(255,255,255,0.18)}
+.tab.on{
+  background:#0d2b1e;color:#00e5a0;
+  border-color:#00e5a044;
+  box-shadow:0 0 8px #00e5a01a;
+}
 
-/* CANVAS */
-#wrap{position:fixed;top:48px;left:0;right:0;bottom:44px}
+/* ── CANVAS AREA ────────────────────────────── */
+#wrap{
+  position:fixed;top:42px;left:0;right:0;bottom:38px;
+  overflow:hidden;
+}
 svg{width:100%;height:100%;display:block}
 
-/* BUBBLES */
-.bubble{cursor:pointer;transition:filter 0.15s}
-.bubble:hover .bcircle,.bubble.active .bcircle{filter:brightness(1.3)}
-.bcircle{transition:r 0.6s cubic-bezier(0.34,1.56,0.64,1)}
-.blabel-sym{
-  font-family:var(--font-display);font-weight:700;
-  fill:rgba(255,255,255,0.92);
-  text-anchor:middle;dominant-baseline:middle;
-  pointer-events:none;
+/* ── BUBBLE STYLES ──────────────────────────── */
+/* green bubbles */
+.b-green .bcircle{
+  stroke-width:1px;
+  fill-rule:evenodd;
 }
-.blabel-pct{
-  font-family:var(--font-mono);font-weight:500;
-  text-anchor:middle;dominant-baseline:middle;
-  pointer-events:none;opacity:0.85;
-}
+/* Radial gradient via SVG defs */
 
-/* FOOTER */
-#ftr{
-  position:fixed;bottom:0;left:0;right:0;height:44px;z-index:200;
-  background:rgba(13,13,18,0.88);
-  backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px);
-  border-top:1px solid var(--border);
-  display:flex;align-items:center;justify-content:space-around;
-  padding:0 12px;
-}
-.fstat{display:flex;flex-direction:column;align-items:center;gap:1px}
-.flab{font-size:8.5px;color:var(--muted);text-transform:uppercase;letter-spacing:0.08em}
-.fval{font-size:13px;font-weight:500;letter-spacing:0.02em}
-.fval.up{color:var(--green)}
-.fval.dn{color:var(--red)}
-.fval.neu{color:var(--text)}
-
-/* TOOLTIP */
+/* ── TOOLTIP ────────────────────────────────── */
 #tip{
   position:fixed;z-index:500;
-  background:rgba(18,18,26,0.97);
-  border:1px solid rgba(255,255,255,0.13);
-  border-radius:12px;padding:12px 16px;
+  background:#0d1410;
+  border:1px solid #1e3a28;
+  border-radius:6px;padding:10px 14px;
   display:none;pointer-events:none;
-  backdrop-filter:blur(20px);
-  min-width:130px;
+  min-width:140px;
 }
-.tip-sym{font-family:var(--font-display);font-size:18px;font-weight:700;margin-bottom:2px}
-.tip-price{font-size:11px;color:var(--muted);letter-spacing:0.03em;margin-bottom:4px}
-.tip-sep{width:100%;height:1px;background:var(--border);margin:6px 0}
-.tip-row{display:flex;justify-content:space-between;gap:16px;font-size:11px}
-.tip-row span:first-child{color:var(--muted)}
-.tip-row span:last-child{font-weight:500}
-.tip-pct{font-size:15px;font-weight:700;margin-top:4px}
+.tname{font-size:15px;font-weight:700;color:#00e5a0;margin-bottom:1px;letter-spacing:.02em}
+.tprice{font-size:10px;color:#3a6a50;margin-bottom:6px}
+.tsep{height:1px;background:#1a2e22;margin:5px 0}
+.trow{display:flex;justify-content:space-between;gap:14px;font-size:10px;padding:1px 0}
+.trow .tl{color:#3a5a48}
+.tpct{font-size:18px;font-weight:700;margin-top:4px}
 
-/* LOADER */
+/* ── FOOTER ─────────────────────────────────── */
+#ftr{
+  position:fixed;bottom:0;left:0;right:0;height:38px;z-index:300;
+  display:flex;align-items:center;justify-content:space-around;
+  border-top:1px solid rgba(255,255,255,0.05);
+  background:#090b0e;
+  padding:0 10px;
+}
+.fs{display:flex;flex-direction:column;align-items:center;gap:0px}
+.fl{font-size:8px;color:#2a3a30;text-transform:uppercase;letter-spacing:.1em}
+.fv{font-size:12px;font-weight:700;letter-spacing:.02em}
+.fv.up{color:#00e5a0}.fv.dn{color:#ff3d57}.fv.n{color:#4a5a50}
+
+/* ── LOADER ─────────────────────────────────── */
 #ldr{
-  position:fixed;inset:0;background:var(--bg);z-index:1000;
-  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:20px;
+  position:fixed;inset:0;background:#090b0e;z-index:1000;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  transition:opacity .4s;
 }
-.ldr-logo{font-family:var(--font-display);font-size:32px;font-weight:700;letter-spacing:-0.02em}
-.ldr-logo span{color:var(--green)}
-.ldr-ring{
-  width:28px;height:28px;border-radius:50%;
-  border:2px solid var(--border);border-top-color:var(--green);
-  animation:spin 0.75s linear infinite;
+.lring{
+  width:32px;height:32px;border-radius:50%;
+  border:2px solid #0d2b1e;border-top-color:#00e5a0;
+  animation:spin .7s linear infinite;
 }
-.ldr-txt{font-size:11px;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase}
 @keyframes spin{to{transform:rotate(360deg)}}
-
-/* PULSE for live dot */
-@keyframes livepulse{
-  0%,100%{box-shadow:0 0 6px var(--green),0 0 0 0 rgba(0,229,160,0.4)}
-  50%{box-shadow:0 0 6px var(--green),0 0 0 5px rgba(0,229,160,0)}
-}
-.live{animation:livepulse 2.5s ease infinite}
+.ltxt{font-size:10px;color:#2a4a38;letter-spacing:.15em;text-transform:uppercase}
+.llogo{font-size:22px;font-weight:700;color:#00e5a0;letter-spacing:-.01em}
+.llogo span{color:#3a5a48}
 </style>
 </head>
 <body>
 
 <div id="ldr">
-  <div class="ldr-logo">Crypto<span>●</span></div>
-  <div class="ldr-ring"></div>
-  <div class="ldr-txt">Chargement des marchés</div>
+  <div class="llogo">Crypto<span>Bubbles</span></div>
+  <div class="lring"></div>
+  <div class="ltxt">Chargement des marchés…</div>
 </div>
 
 <div id="hdr">
-  <div class="hdr-brand">
-    <div class="hdr-dot live"></div>
+  <div class="hbrand">
+    <div class="hbullet live"></div>
     <div>
-      <div class="hdr-title">CryptoBubbles</div>
-      <div class="hdr-sub" id="hdr-sub">Top 50 — Marché live</div>
+      <div class="hname">● Crypto Bubbles</div>
+      <div class="hsub" id="hsub">Top 50 — Marché live</div>
     </div>
   </div>
   <div class="tabs">
@@ -157,28 +141,29 @@ svg{width:100%;height:100%;display:block}
   </div>
 </div>
 
-<div id="wrap"><svg id="svg"></svg></div>
+<div id="wrap"><svg id="svg"><defs id="defs"></defs></svg></div>
 
 <div id="ftr">
-  <div class="fstat"><span class="flab">Hausses</span><span class="fval up" id="f-up">–</span></div>
-  <div class="fstat"><span class="flab">Baisses</span><span class="fval dn" id="f-dn">–</span></div>
-  <div class="fstat"><span class="flab">BTC Dom.</span><span class="fval neu" id="f-dom">–</span></div>
-  <div class="fstat"><span class="flab">Vol 24h</span><span class="fval neu" id="f-vol">–</span></div>
+  <div class="fs"><span class="fl">Hausses</span><span class="fv up" id="f-up">–</span></div>
+  <div class="fs"><span class="fl">Baisses</span><span class="fv dn" id="f-dn">–</span></div>
+  <div class="fs"><span class="fl">BTC Dom.</span><span class="fv n" id="f-dom">–</span></div>
+  <div class="fs"><span class="fl">Vol. 24h</span><span class="fv n" id="f-vol">–</span></div>
 </div>
 
 <div id="tip">
-  <div class="tip-sym" id="t-sym"></div>
-  <div class="tip-price" id="t-price"></div>
-  <div class="tip-pct" id="t-pct"></div>
-  <div class="tip-sep"></div>
-  <div class="tip-row"><span>1H</span><span id="t-1h"></span></div>
-  <div class="tip-row"><span>24H</span><span id="t-24h"></span></div>
-  <div class="tip-row"><span>7J</span><span id="t-7d"></span></div>
+  <div class="tname" id="t-sym"></div>
+  <div class="tprice" id="t-price"></div>
+  <div class="tpct" id="t-pct"></div>
+  <div class="tsep"></div>
+  <div class="trow"><span class="tl">1H</span><span id="t-1h"></span></div>
+  <div class="trow"><span class="tl">24H</span><span id="t-24h"></span></div>
+  <div class="trow"><span class="tl">7J</span><span id="t-7d"></span></div>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
 <script>
-const COINS_IDS = [
+// ── CONFIG ─────────────────────────────────────────────────────────────────
+const COIN_IDS = [
   'bitcoin','ethereum','tether','binancecoin','solana','ripple',
   'usd-coin','staked-ether','dogecoin','cardano','tron','avalanche-2',
   'shiba-inu','polkadot','chainlink','polygon','litecoin','uniswap',
@@ -187,341 +172,357 @@ const COINS_IDS = [
   'algorand','injective-protocol','sei-network','monero','lido-dao',
   'the-graph','render-token','aave','cosmos','sui','flow','maker',
   'theta-token','quant-network','fetch-ai','elrond-erd-2','axie-infinity',
-  'decentraland','eos','conflux-token'
+  'decentraland','eos','conflux-token','wrapped-bitcoin'
 ];
 
+// ── STATE ──────────────────────────────────────────────────────────────────
 let period = '1h';
 let allData = [];
-let simulation;
-let tipTimer;
+let sim;
 let W, H;
+let tipTimer;
 
-const svg = d3.select('#svg');
+// ── UTILS ──────────────────────────────────────────────────────────────────
+const svg  = d3.select('#svg');
+const defs = d3.select('#defs');
 const wrap = document.getElementById('wrap');
 
-function dims() {
+function dims(){
   const r = wrap.getBoundingClientRect();
   W = r.width; H = r.height;
 }
 
-// Color logic — matches original site exactly
-function bubbleColor(pct) {
-  if (pct === null || pct === undefined || isNaN(pct)) {
-    return { fill: '#1e1e2a', stroke: '#2e2e40', text: 'rgba(255,255,255,0.5)' };
+function fmtPct(v){
+  if(v==null||isNaN(v)) return '–';
+  return (v>0?'+':'')+v.toFixed(2)+'%';
+}
+function fmtPrice(p){
+  if(!p||isNaN(p)) return '–';
+  if(p>=10000) return '$'+p.toLocaleString('en-US',{maximumFractionDigits:0});
+  if(p>=1)     return '$'+p.toFixed(2);
+  if(p>=0.001) return '$'+p.toFixed(4);
+  return '$'+p.toFixed(6);
+}
+function fmtVol(v){
+  if(!v) return '–';
+  if(v>=1e12) return '$'+(v/1e12).toFixed(1)+'T';
+  if(v>=1e9)  return '$'+(v/1e9).toFixed(1)+'B';
+  if(v>=1e6)  return '$'+(v/1e6).toFixed(0)+'M';
+  return '$'+v.toFixed(0);
+}
+
+// ── COLORS — exactly matching the reference screenshot ─────────────────────
+//  Green: dark teal fill, bright teal text
+//  Red:   dark crimson fill, bright crimson text
+//  Neutral (≈0): very dark, muted
+function bubbleStyle(pct){
+  if(pct==null||isNaN(pct)){
+    return { fill:'#101a14', stroke:'#1a2a1e', text:'#2a4a38', dim:true };
   }
   const a = Math.abs(pct);
-  if (pct >= 0) {
-    // green scale
-    const intensity = Math.min(1, a / 10);
-    const r = Math.round(0 + intensity * 0);
-    const g = Math.round(60 + intensity * 90);
-    const b = Math.round(50 + intensity * 20);
-    const alpha = 0.25 + intensity * 0.55;
-    return {
-      fill: `rgba(${r},${g+60},${b+60},${alpha})`,
-      stroke: `rgba(0,${180 + intensity*75},${120+intensity*60},${0.35+intensity*0.45})`,
-      text: pct > 0.3 ? `rgba(${80-intensity*40},${220+intensity*35},${150+intensity*20},0.95)` : 'rgba(80,200,150,0.7)'
-    };
+
+  if(pct >= 0){
+    // 0→10%+ scale
+    const t = Math.min(1, a / 8);
+    // fill: very dark teal → slightly less dark teal
+    const fill = lerpColor([8,26,18], [10,44,30], t);
+    // stroke: subtle green glow
+    const stroke = `rgba(0,${180+Math.round(t*75)},${120+Math.round(t*40)},${0.25+t*0.45})`;
+    // text: bright teal, gets more vivid with bigger move
+    const tr = Math.round(0);
+    const tg = Math.round(180+t*75);
+    const tb = Math.round(130+t*30);
+    return { fill, stroke, text:`rgb(${tr},${tg},${tb})` };
   } else {
-    const intensity = Math.min(1, a / 10);
-    const alpha = 0.25 + intensity * 0.55;
-    return {
-      fill: `rgba(${120+intensity*80},${20},${30+intensity*20},${alpha})`,
-      stroke: `rgba(${200+intensity*55},${40},${60+intensity*30},${0.35+intensity*0.45})`,
-      text: `rgba(${220+intensity*35},${80-intensity*40},${80-intensity*40},0.95)`
-    };
+    const t = Math.min(1, a / 8);
+    const fill = lerpColor([26,8,12], [48,10,16], t);
+    const stroke = `rgba(${180+Math.round(t*75)},${30},${50},${0.25+t*0.45})`;
+    const tr = Math.round(180+t*75);
+    const tg = Math.round(40-t*20);
+    const tb = Math.round(55-t*25);
+    return { fill, stroke, text:`rgb(${tr},${tg},${tb})` };
   }
 }
 
-function radius(mcap, maxMcap, area) {
-  // Scale so total bubble area ≈ 75% of canvas
-  const norm = Math.pow(mcap / maxMcap, 0.5);
-  const minR = Math.min(W, H) * 0.028;
-  const maxR = Math.min(W, H) * 0.22;
-  return minR + norm * (maxR - minR);
+function lerpColor(a,b,t){
+  const r=Math.round(a[0]+(b[0]-a[0])*t);
+  const g=Math.round(a[1]+(b[1]-a[1])*t);
+  const bl=Math.round(a[2]+(b[2]-a[2])*t);
+  return `rgb(${r},${g},${bl})`;
 }
 
-function fmtPct(v) {
-  if (v === null || v === undefined || isNaN(v)) return '–';
-  return (v > 0 ? '+' : '') + v.toFixed(2) + '%';
+// ── RADIUS CALCULATION ─────────────────────────────────────────────────────
+// Pack bubbles so they fill ~92% of the canvas area (like the original)
+function assignRadii(data){
+  const maxM = d3.max(data, d=>d.mcap);
+  const minR = Math.min(W,H)*0.025;
+  const maxR = Math.min(W,H)*0.28;
+
+  // raw radii proportional to sqrt(mcap)
+  data.forEach(d=>{
+    const norm = Math.sqrt(d.mcap/maxM);
+    d.r = minR + norm*(maxR-minR);
+  });
+
+  // Scale so sum of areas ≈ 88% of canvas
+  const totalArea = data.reduce((s,d)=>s+Math.PI*d.r*d.r,0);
+  const target    = W*H*0.88;
+  const scale     = Math.sqrt(target/totalArea);
+  data.forEach(d=>{ d.r = Math.max(12, d.r*scale); });
 }
 
-function fmtPrice(p) {
-  if (!p) return '–';
-  if (p >= 10000) return '$' + p.toLocaleString('en-US', {maximumFractionDigits: 0});
-  if (p >= 1) return '$' + p.toFixed(2);
-  if (p >= 0.001) return '$' + p.toFixed(4);
-  return '$' + p.toFixed(6);
-}
-
-function fmtVol(v) {
-  if (!v) return '–';
-  if (v >= 1e12) return '$' + (v/1e12).toFixed(1) + 'T';
-  if (v >= 1e9) return '$' + (v/1e9).toFixed(1) + 'B';
-  if (v >= 1e6) return '$' + (v/1e6).toFixed(0) + 'M';
-  return '$' + v.toFixed(0);
-}
-
-function render(data) {
+// ── RENDER ─────────────────────────────────────────────────────────────────
+function render(data, keepPositions=false){
   dims();
-  svg.selectAll('*').remove();
+  assignRadii(data);
 
-  const maxMcap = d3.max(data, d => d.mcap);
-
-  // Assign radii
-  data.forEach(d => {
-    d.r = radius(d.mcap, maxMcap, W * H);
-  });
-
-  // Scale radii so total area fills ~78% of canvas
-  const totalArea = data.reduce((s, d) => s + Math.PI * d.r * d.r, 0);
-  const canvasArea = W * H * 0.78;
-  const scaleFactor = Math.sqrt(canvasArea / totalArea);
-  data.forEach(d => {
-    d.r = Math.max(14, d.r * scaleFactor);
-    d.x = d.x || W * 0.3 + Math.random() * W * 0.4;
-    d.y = d.y || H * 0.3 + Math.random() * H * 0.4;
-  });
-
-  // D3 force simulation
-  if (simulation) simulation.stop();
-
-  simulation = d3.forceSimulation(data)
-    .force('charge', d3.forceManyBody().strength(d => -d.r * 0.8))
-    .force('collide', d3.forceCollide().radius(d => d.r + 1.5).strength(0.85).iterations(4))
-    .force('x', d3.forceX(W / 2).strength(0.04))
-    .force('y', d3.forceY(H / 2).strength(0.04))
-    .alphaDecay(0.018)
-    .velocityDecay(0.35);
-
-  const gAll = svg.append('g').attr('class', 'bubbles-layer');
-
-  const groups = gAll.selectAll('g.bubble')
-    .data(data, d => d.id)
-    .join('g')
-    .attr('class', 'bubble')
-    .on('click touchend', function(event, d) {
-      event.preventDefault();
-      showTip(d, event);
-    });
-
-  groups.each(function(d) {
-    const g = d3.select(this);
-    const col = bubbleColor(d[period]);
-
-    g.append('circle')
-      .attr('class', 'bcircle')
-      .attr('r', d.r)
-      .attr('fill', col.fill)
-      .attr('stroke', col.stroke)
-      .attr('stroke-width', 1.2);
-
-    const showSym = d.r > 16;
-    const showPct = d.r > 26;
-    const showBoth = d.r > 32;
-
-    if (showBoth) {
-      g.append('text')
-        .attr('class', 'blabel-sym')
-        .attr('dy', showPct ? '-0.55em' : '0')
-        .style('font-size', Math.min(d.r * 0.34, 15) + 'px')
-        .attr('fill', col.text)
-        .text(d.sym);
-
-      g.append('text')
-        .attr('class', 'blabel-pct')
-        .attr('dy', '0.8em')
-        .style('font-size', Math.min(d.r * 0.24, 11) + 'px')
-        .attr('fill', col.text)
-        .attr('opacity', 0.85)
-        .text(fmtPct(d[period]));
-    } else if (showSym) {
-      g.append('text')
-        .attr('class', 'blabel-sym')
-        .style('font-size', Math.min(d.r * 0.42, 13) + 'px')
-        .attr('fill', col.text)
-        .text(d.sym);
-    } else {
-      g.append('text')
-        .attr('class', 'blabel-sym')
-        .style('font-size', Math.max(8, d.r * 0.5) + 'px')
-        .attr('fill', col.text)
-        .text(d.sym.slice(0, 3));
+  // init positions: keep old ones if we have them, else scatter near center
+  data.forEach(d=>{
+    if(!keepPositions || d.x==null){
+      // spread out from center proportional to inverse of size
+      const angle = Math.random()*Math.PI*2;
+      const spread = Math.random()*Math.min(W,H)*0.25;
+      d.x = W/2 + Math.cos(angle)*spread;
+      d.y = H/2 + Math.sin(angle)*spread;
     }
+    d.vx=0; d.vy=0;
   });
 
-  simulation.on('tick', () => {
-    data.forEach(d => {
-      d.x = Math.max(d.r, Math.min(W - d.r, d.x));
-      d.y = Math.max(d.r, Math.min(H - d.r, d.y));
+  // Stop old sim
+  if(sim) sim.stop();
+
+  // SVG layers
+  svg.selectAll('g.blayer').remove();
+  const layer = svg.append('g').attr('class','blayer');
+
+  const node = layer.selectAll('g.bnode')
+    .data(data, d=>d.id)
+    .join(
+      enter => {
+        const g = enter.append('g').attr('class','bnode')
+          .style('cursor','pointer');
+
+        g.append('circle').attr('class','bcircle');
+        g.append('text').attr('class','bsym');
+        g.append('text').attr('class','bpct');
+
+        g.on('click touchend', function(ev,d){
+          ev.preventDefault(); ev.stopPropagation();
+          showTip(d, ev);
+        });
+        return g;
+      }
+    );
+
+  // style all nodes
+  styleNodes(node, data);
+
+  // Simulation — tight packing with strong collision
+  sim = d3.forceSimulation(data)
+    .force('collide', d3.forceCollide(d=>d.r+0.8).strength(1).iterations(6))
+    .force('x', d3.forceX(W/2).strength(0.055))
+    .force('y', d3.forceY(H/2).strength(0.055))
+    .force('charge', d3.forceManyBody().strength(d=> -d.r*0.4))
+    .alphaDecay(0.012)
+    .velocityDecay(0.42)
+    .on('tick', ()=>{
+      // clamp to bounds
+      data.forEach(d=>{
+        d.x = Math.max(d.r, Math.min(W-d.r, d.x));
+        d.y = Math.max(d.r, Math.min(H-d.r, d.y));
+      });
+      node.attr('transform', d=>`translate(${d.x},${d.y})`);
     });
-    groups.attr('transform', d => `translate(${d.x},${d.y})`);
-  });
-
-  // footer
-  const up = data.filter(d => (d[period] || 0) > 0).length;
-  const dn = data.filter(d => (d[period] || 0) < 0).length;
-  document.getElementById('f-up').textContent = up;
-  document.getElementById('f-dn').textContent = dn;
-  const btc = data.find(d => d.id === 'bitcoin');
-  const total = data.reduce((s, d) => s + (d.mcap || 0), 0);
-  if (btc && total) document.getElementById('f-dom').textContent = ((btc.mcap / total) * 100).toFixed(1) + '%';
-  const totalVol = data.reduce((s, d) => s + (d.vol || 0), 0);
-  document.getElementById('f-vol').textContent = fmtVol(totalVol);
 }
 
-function updateColors() {
-  svg.selectAll('g.bubble').each(function(d) {
-    const col = bubbleColor(d[period]);
-    d3.select(this).select('circle').attr('fill', col.fill).attr('stroke', col.stroke);
-    d3.select(this).selectAll('text').attr('fill', col.text);
-    // update pct label
-    const texts = d3.select(this).selectAll('text.blabel-pct');
-    if (!texts.empty()) texts.text(fmtPct(d[period]));
-  });
+function styleNodes(sel, data){
+  sel.each(function(d){
+    const st = bubbleStyle(d[period]);
+    const g  = d3.select(this);
 
-  const up = allData.filter(d => (d[period] || 0) > 0).length;
-  const dn = allData.filter(d => (d[period] || 0) < 0).length;
-  document.getElementById('f-up').textContent = up;
-  document.getElementById('f-dn').textContent = dn;
+    g.select('.bcircle')
+      .attr('r', d.r)
+      .attr('fill', st.fill)
+      .attr('stroke', st.stroke)
+      .attr('stroke-width', 1);
+
+    // font sizes
+    const bigR  = d.r > 36;
+    const midR  = d.r > 20;
+
+    g.select('.bsym')
+      .attr('text-anchor','middle')
+      .attr('dominant-baseline','middle')
+      .attr('dy', bigR ? '-0.6em' : midR ? '-0.1em' : '0')
+      .attr('fill', st.text)
+      .style('font-size', `${Math.min(d.r*0.38, 14)}px`)
+      .style('font-weight','700')
+      .style('letter-spacing','.02em')
+      .text(d.r>12 ? d.sym : '');
+
+    g.select('.bpct')
+      .attr('text-anchor','middle')
+      .attr('dominant-baseline','middle')
+      .attr('dy', bigR ? '0.7em' : '0')
+      .attr('fill', st.text)
+      .style('font-size', `${Math.min(d.r*0.26, 10)}px`)
+      .style('font-weight','500')
+      .attr('opacity', bigR?0.9:0)
+      .text(fmtPct(d[period]));
+  });
 }
 
-function showTip(d, event) {
+// ── UPDATE COLORS ONLY (period change) ────────────────────────────────────
+function recolor(){
+  svg.selectAll('g.bnode').call(function(sel){
+    styleNodes(sel, allData);
+  });
+  updateFooter();
+}
+
+// ── TOOLTIP ────────────────────────────────────────────────────────────────
+function showTip(d, ev){
   clearTimeout(tipTimer);
   const tip = document.getElementById('tip');
-  document.getElementById('t-sym').textContent = d.sym;
+
+  document.getElementById('t-sym').textContent   = d.sym;
   document.getElementById('t-price').textContent = fmtPrice(d.price);
 
-  const pct = d[period];
+  const pct   = d[period];
   const pctEl = document.getElementById('t-pct');
-  pctEl.textContent = fmtPct(pct);
-  pctEl.style.color = (!pct || isNaN(pct)) ? 'var(--muted)' : pct >= 0 ? 'var(--green)' : 'var(--red)';
+  pctEl.textContent  = fmtPct(pct);
+  pctEl.style.color  = (!pct||isNaN(pct)) ? '#3a5a48' : pct>=0 ? '#00e5a0' : '#ff3d57';
 
-  document.getElementById('t-1h').textContent = fmtPct(d['1h']);
-  document.getElementById('t-1h').style.color = (d['1h']||0) >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('t-24h').textContent = fmtPct(d['24h']);
-  document.getElementById('t-24h').style.color = (d['24h']||0) >= 0 ? 'var(--green)' : 'var(--red)';
-  document.getElementById('t-7d').textContent = fmtPct(d['7d']);
-  document.getElementById('t-7d').style.color = (d['7d']||0) >= 0 ? 'var(--green)' : 'var(--red)';
+  const setRow = (id, val)=>{
+    const el = document.getElementById(id);
+    el.textContent = fmtPct(val);
+    el.style.color = (!val||isNaN(val)) ? '#3a5a48' : val>=0 ? '#00e5a0' : '#ff3d57';
+  };
+  setRow('t-1h',  d['1h']);
+  setRow('t-24h', d['24h']);
+  setRow('t-7d',  d['7d']);
 
   tip.style.display = 'block';
 
-  // Position
-  let x, y;
-  if (event.touches && event.touches.length) {
-    x = event.touches[0].clientX; y = event.touches[0].clientY;
-  } else if (event.changedTouches && event.changedTouches.length) {
-    x = event.changedTouches[0].clientX; y = event.changedTouches[0].clientY;
-  } else {
-    x = event.clientX; y = event.clientY;
-  }
+  // position
+  let cx, cy;
+  if(ev.changedTouches?.length){ cx=ev.changedTouches[0].clientX; cy=ev.changedTouches[0].clientY; }
+  else if(ev.touches?.length)  { cx=ev.touches[0].clientX;        cy=ev.touches[0].clientY; }
+  else                         { cx=ev.clientX;                    cy=ev.clientY; }
 
-  const tw = tip.offsetWidth || 150, th = tip.offsetHeight || 120;
-  let tx = x + 14, ty = y - th / 2;
-  if (tx + tw > W - 8) tx = x - tw - 14;
-  if (ty < 54) ty = 54;
-  if (ty + th > H - 50) ty = H - th - 50;
-  tip.style.left = tx + 'px';
-  tip.style.top = ty + 'px';
-
-  tipTimer = setTimeout(() => { tip.style.display = 'none'; }, 3500);
+  const tw=tip.offsetWidth||155, th=tip.offsetHeight||130;
+  let tx=cx+16, ty=cy-th/2;
+  if(tx+tw>W-6) tx=cx-tw-16;
+  if(ty<46)     ty=46;
+  if(ty+th>H-42) ty=H-42-th;
+  tip.style.left=tx+'px'; tip.style.top=ty+'px';
+  tipTimer = setTimeout(()=>tip.style.display='none', 3500);
 }
 
-document.addEventListener('click', e => {
-  if (!e.target.closest('.bubble') && !e.target.closest('#tip')) {
-    document.getElementById('tip').style.display = 'none';
-  }
+document.addEventListener('pointerdown', ev=>{
+  if(!ev.target.closest('.bnode')&&!ev.target.closest('#tip'))
+    document.getElementById('tip').style.display='none';
 });
 
-// Period tabs
-document.querySelectorAll('.tab').forEach(btn => {
-  btn.addEventListener('click', () => {
-    document.querySelectorAll('.tab').forEach(b => b.classList.remove('on'));
+// ── FOOTER ────────────────────────────────────────────────────────────────
+function updateFooter(){
+  const up  = allData.filter(d=>(d[period]||0)>0).length;
+  const dn  = allData.filter(d=>(d[period]||0)<0).length;
+  document.getElementById('f-up').textContent = up;
+  document.getElementById('f-dn').textContent = dn;
+  const btc   = allData.find(d=>d.id==='bitcoin');
+  const total = allData.reduce((s,d)=>s+(d.mcap||0),0);
+  if(btc&&total) document.getElementById('f-dom').textContent=((btc.mcap/total)*100).toFixed(1)+'%';
+  const vol = allData.reduce((s,d)=>s+(d.vol||0),0);
+  document.getElementById('f-vol').textContent = fmtVol(vol);
+}
+
+// ── PERIOD TABS ───────────────────────────────────────────────────────────
+document.querySelectorAll('.tab').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(b=>b.classList.remove('on'));
     btn.classList.add('on');
     period = btn.dataset.p;
-    updateColors();
+    recolor();
   });
 });
 
-// Fetch data
-async function fetchData() {
-  try {
-    const ids = COINS_IDS.join(',');
-    const url = `https://api.coingecko.com/api/v3/coins/markets?vs_currency=usd&ids=${ids}&order=market_cap_desc&per_page=50&page=1&price_change_percentage=1h,24h,7d`;
+// ── DATA FETCH ────────────────────────────────────────────────────────────
+async function fetchData(){
+  try{
+    const ids = COIN_IDS.join(',');
+    const url = `https://api.coingecko.com/api/v3/coins/markets`+
+      `?vs_currency=usd&ids=${ids}&order=market_cap_desc`+
+      `&per_page=50&page=1&price_change_percentage=1h,24h,7d`;
     const res = await fetch(url);
-    if (!res.ok) throw new Error('API error');
+    if(!res.ok) throw new Error('HTTP '+res.status);
     const json = await res.json();
 
-    // Preserve x/y if we already have data
-    const prev = {};
-    allData.forEach(d => { prev[d.id] = { x: d.x, y: d.y }; });
+    const prev={};
+    allData.forEach(d=>{ prev[d.id]={x:d.x,y:d.y}; });
 
-    allData = json.map(d => ({
-      id: d.id,
-      sym: d.symbol.toUpperCase(),
-      price: d.current_price,
-      mcap: d.market_cap || 1e6,
-      vol: d.total_volume || 0,
-      '1h': d.price_change_percentage_1h_in_currency ?? null,
-      '24h': d.price_change_percentage_24h_in_currency ?? null,
-      '7d': d.price_change_percentage_7d_in_currency ?? null,
+    allData = json.map(d=>({
+      id:   d.id,
+      sym:  d.symbol.toUpperCase(),
+      price:d.current_price,
+      mcap: d.market_cap||1e6,
+      vol:  d.total_volume||0,
+      '1h': d.price_change_percentage_1h_in_currency  ??null,
+      '24h':d.price_change_percentage_24h_in_currency ??null,
+      '7d': d.price_change_percentage_7d_in_currency  ??null,
       x: prev[d.id]?.x,
       y: prev[d.id]?.y,
     }));
 
-    document.getElementById('ldr').style.opacity = '0';
-    setTimeout(() => document.getElementById('ldr').style.display = 'none', 400);
-    render(allData);
+    hideLdr();
+    render(allData, Object.keys(prev).length>0);
+    updateFooter();
 
-  } catch(e) {
-    console.warn('API error, using demo data', e);
-    useDemoData();
+  } catch(e){
+    console.warn('API fail',e);
+    demoData();
   }
 }
 
-function useDemoData() {
-  const syms = ['BTC','ETH','USDT','BNB','SOL','XRP','USDC','DOGE','ADA','TRX',
-                 'AVAX','SHIB','DOT','LINK','MATIC','LTC','UNI','BCH','XLM','ICP',
-                 'ETC','FIL','HBAR','NEAR','APT','ARB','VET','TON','ALGO','INJ',
-                 'SEI','XMR','LDO','GRT','RNDR','AAVE','ATOM','SUI','FLOW','MKR',
-                 'THETA','QNT','FET','EGLD','AXS','MANA','EOS','CFX','WBTC','BNX'];
-  const mcaps = [1.2e12,4e11,1.1e11,8e10,7e10,6.5e10,5e10,4e10,3.5e10,3e10,
-                 2.8e10,2.5e10,2.2e10,2e10,1.8e10,1.5e10,1.2e10,1e10,9e9,8e9,
-                 7.5e9,7e9,6.5e9,6e9,5.5e9,5e9,4.5e9,4e9,3.5e9,3e9,
-                 2.8e9,2.5e9,2.3e9,2e9,1.8e9,1.7e9,1.5e9,1.4e9,1.3e9,1.2e9,
-                 1.1e9,1e9,9e8,8e8,7e8,6e8,5e8,4e8,3.5e8,3e8];
-
-  allData = syms.map((sym, i) => {
-    const r = () => (Math.random() - 0.48) * 12;
-    return {
-      id: sym.toLowerCase(), sym,
-      price: mcaps[i] / 1e9 * (50000 / mcaps[0] * 1e9),
-      mcap: mcaps[i], vol: mcaps[i] * 0.05,
-      '1h': r(), '24h': r(), '7d': r() * 2,
-    };
-  });
-
-  document.getElementById('hdr-sub').textContent = 'Démo — Données simulées';
-  document.getElementById('ldr').style.opacity = '0';
-  setTimeout(() => document.getElementById('ldr').style.display = 'none', 400);
-  render(allData);
+function demoData(){
+  document.getElementById('hsub').textContent='Démo — données simulées';
+  const syms=['BTC','ETH','USDT','BNB','SOL','XRP','USDC','STETH','DOGE','ADA',
+               'TRX','AVAX','SHIB','DOT','LINK','MATIC','LTC','UNI','BCH','XLM',
+               'ICP','ETC','FIL','HBAR','NEAR','APT','ARB','VET','TON','ALGO',
+               'INJ','SEI','XMR','LDO','GRT','RNDR','AAVE','ATOM','SUI','FLOW',
+               'MKR','THETA','QNT','FET','EGLD','AXS','MANA','EOS','CFX','WBTC'];
+  const caps=[1.2e12,4e11,1.1e11,8e10,7e10,6.5e10,5e10,4.8e10,4e10,3.5e10,
+              3e10,2.8e10,2.5e10,2.2e10,2e10,1.8e10,1.5e10,1.2e10,1e10,9e9,
+              8e9,7.5e9,7e9,6.5e9,6e9,5.5e9,5e9,4.5e9,4e9,3.5e9,
+              3e9,2.8e9,2.5e9,2.3e9,2e9,1.8e9,1.7e9,1.5e9,1.4e9,1.3e9,
+              1.2e9,1.1e9,1e9,9e8,8e8,7e8,6e8,5e8,4e8,3.5e8];
+  const rnd=()=>(Math.random()-.45)*12;
+  allData = syms.map((s,i)=>({
+    id:s.toLowerCase(),sym:s,
+    price:caps[i]/1e6,mcap:caps[i],vol:caps[i]*.04,
+    '1h':rnd(),'24h':rnd(),'7d':rnd()*2,
+  }));
+  hideLdr();
+  render(allData,false);
+  updateFooter();
 }
 
-// Resize
-let resizeTimer;
-window.addEventListener('resize', () => {
-  clearTimeout(resizeTimer);
-  resizeTimer = setTimeout(() => {
-    if (allData.length) render(allData);
-  }, 200);
+function hideLdr(){
+  const l=document.getElementById('ldr');
+  l.style.opacity='0';
+  setTimeout(()=>l.style.display='none',400);
+}
+
+// ── RESIZE ────────────────────────────────────────────────────────────────
+let rzTimer;
+window.addEventListener('resize',()=>{
+  clearTimeout(rzTimer);
+  rzTimer=setTimeout(()=>{ if(allData.length) render(allData,true); },200);
 });
 
-// SW
-if ('serviceWorker' in navigator) {
-  navigator.serviceWorker.register('sw.js').catch(() => {});
-}
-
-// Kick off
+// ── INIT ──────────────────────────────────────────────────────────────────
+dims();
+if('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(()=>{});
 fetchData();
 setInterval(fetchData, 60000);
 </script>
